@@ -1,3 +1,4 @@
+const { randomUUID } = require('crypto')
 const express = require('express')
 const path = require('path')
 const { readJSON, writeJSON } = require('../utils/fileStorage')
@@ -13,7 +14,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const accounts = await readJSON(DATA_PATH) || []
   const account = {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     ...req.body,
     updatedAt: new Date().toISOString().split('T')[0]
   }
