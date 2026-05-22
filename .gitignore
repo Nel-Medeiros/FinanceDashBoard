@@ -2,3 +2,7 @@ node_modules/
 dist/
 .env
 *.local
+
+# Server runtime data (runtime-mutable; seeded from *.default.json)
+server/data/*.json
+!server/data/*.default.json
