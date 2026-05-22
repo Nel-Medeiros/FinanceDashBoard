@@ -29,8 +29,8 @@ export function Dashboard() {
 
   const thisMonth = currentMonthPrefix()
   const monthTx = transactions.filter(t => t.date.startsWith(thisMonth))
-  const income = monthTx.filter(t => t.type === 'income').reduce((s, t) => s + toEUR(t.amount, t.currency, rate || 1), 0)
-  const expenses = monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + toEUR(t.amount, t.currency, rate || 1), 0)
+  const income = rate ? monthTx.filter(t => t.type === 'income').reduce((s, t) => s + toEUR(t.amount, t.currency, rate), 0) : 0
+  const expenses = rate ? monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + toEUR(t.amount, t.currency, rate), 0) : 0
   const net = income - expenses
 
   return (
