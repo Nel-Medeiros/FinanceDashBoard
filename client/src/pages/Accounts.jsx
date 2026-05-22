@@ -14,7 +14,7 @@ export function Accounts() {
   useEffect(() => { load() }, [])
 
   const toEUR = (balance, currency) =>
-    currency === 'EUR' ? balance : balance / (rate || 1)
+    currency === 'EUR' ? balance : (rate ? balance / rate : 0)
 
   const handleSubmit = async (data) => {
     if (editing) {
