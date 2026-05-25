@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { vi } from 'vitest'
 import { Analytics } from '../pages/Analytics'
 
@@ -44,6 +44,22 @@ describe('Analytics page', () => {
     await waitFor(() => {
       expect(screen.getByText('Expenses by Category')).toBeInTheDocument()
       expect(screen.getByText('Monthly Income vs Expenses')).toBeInTheDocument()
+    })
+  })
+
+  it('renders the currency toggle with BRL, EUR, and All options', () => {
+    render(<Analytics />)
+    expect(screen.getByRole('button', { name: 'BRL' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'EUR' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument()
+  })
+
+  it('shows empty pie chart state when selected currency has no expense data', async () => {
+    render(<Analytics />)
+    // Mock only has BRL transactions — selecting EUR should yield no expenses
+    fireEvent.click(screen.getByRole('button', { name: 'EUR' }))
+    await waitFor(() => {
+      expect(screen.getByText('No expense data for this month.')).toBeInTheDocument()
     })
   })
 })
