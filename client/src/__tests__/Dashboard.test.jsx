@@ -37,12 +37,29 @@ describe('Dashboard', () => {
     await waitFor(() => expect(screen.getByRole('progressbar')).toBeInTheDocument())
   })
 
-  it('shows monthly income and expense summary cards', async () => {
+  it('shows per-currency income and expense cards', async () => {
     render(<Dashboard />)
     await waitFor(() => {
-      expect(screen.getByText('Income This Month')).toBeInTheDocument()
-      expect(screen.getByText('Expenses This Month')).toBeInTheDocument()
+      expect(screen.getByText('Income (BRL)')).toBeInTheDocument()
+      expect(screen.getByText('Expenses (BRL)')).toBeInTheDocument()
       expect(screen.getByText('Net This Month')).toBeInTheDocument()
+    })
+  })
+
+  it('shows correct BRL amounts on income and expense cards', async () => {
+    render(<Dashboard />)
+    // income: R$3000.00, expenses: R$200.00
+    await waitFor(() => {
+      expect(screen.getByText('R$3000.00')).toBeInTheDocument()
+      expect(screen.getByText('R$200.00')).toBeInTheDocument()
+    })
+  })
+
+  it('shows net in EUR', async () => {
+    render(<Dashboard />)
+    // net = (3000/5.85) - (200/5.85) = (2800/5.85) ≈ 478.63
+    await waitFor(() => {
+      expect(screen.getByText('€478.63')).toBeInTheDocument()
     })
   })
 })

@@ -19,6 +19,10 @@ vi.mock('../api/categories', () => ({
   getCategories: vi.fn().mockResolvedValue(['Salary', 'Food', 'Transport'])
 }))
 
+vi.mock('../context/ExchangeRateContext', () => ({
+  useExchangeRate: () => 5.85
+}))
+
 describe('Transactions page', () => {
   it('renders list of transactions', async () => {
     render(<Transactions />)
@@ -41,5 +45,13 @@ describe('Transactions page', () => {
   it('shows Add Transaction button', () => {
     render(<Transactions />)
     expect(screen.getByText('Add Transaction')).toBeInTheDocument()
+  })
+
+  it('shows EUR equivalent note for BRL transactions', async () => {
+    render(<Transactions />)
+    // tx-2: R$200 / 5.85 = 34.19
+    await waitFor(() => {
+      expect(screen.getByText('≈ €34.19')).toBeInTheDocument()
+    })
   })
 })
