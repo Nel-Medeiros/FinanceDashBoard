@@ -3,12 +3,14 @@ import { Pencil, Trash2, Plus } from 'lucide-react'
 import { getTransactions, createTransaction, updateTransaction, deleteTransaction } from '../api/transactions'
 import { getCategories } from '../api/categories'
 import { TransactionForm } from '../components/TransactionForm'
+import { useExchangeRate } from '../context/ExchangeRateContext'
 
 function currentMonthValue() {
   return new Date().toISOString().slice(0, 7)
 }
 
 export function Transactions() {
+  const rate = useExchangeRate()
   const [transactions, setTransactions] = useState([])
   const [categories, setCategories] = useState([])
   const [showForm, setShowForm] = useState(false)
@@ -127,9 +129,14 @@ export function Transactions() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className={`font-semibold ${tx.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                {tx.type === 'income' ? '+' : '-'}{tx.currency === 'BRL' ? 'R$' : '€'}{tx.amount.toFixed(2)}
-              </span>
+              <div className="text-right">
+                <p className={`font-semibold ${tx.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {tx.type === 'income' ? '+' : '-'}{tx.currency === 'BRL' ? 'R$' : '€'}{tx.amount.toFixed(2)}
+                </p>
+                {tx.currency !== 'EUR' && rate && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500">≈ €{(tx.amount / rate).toFixed(2)}</p>
+                )}
+              </div>
               <button onClick={() => handleEdit(tx)} className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500"><Pencil size={14} /></button>
               <button onClick={() => handleDelete(tx.id)} className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500"><Trash2 size={14} /></button>
             </div>
