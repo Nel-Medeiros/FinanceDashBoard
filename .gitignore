@@ -6,3 +6,14 @@ dist/
 # Server runtime data (runtime-mutable; seeded from *.default.json)
 server/data/*.json
 !server/data/*.default.json
+
+# Claude Code local settings
+.claude/
+
+# Logs and temp files
+vite.log
+*.log
+
+# Screenshots
+screenshot*.png
+screenshot*.cjs
