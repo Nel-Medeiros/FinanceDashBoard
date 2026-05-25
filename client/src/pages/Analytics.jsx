@@ -61,6 +61,7 @@ export function Analytics() {
             <button
               key={c}
               onClick={() => setCurrency(c)}
+              aria-pressed={currency === c}
               className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                 currency === c
                   ? 'bg-white dark:bg-gray-800 shadow text-gray-900 dark:text-white'

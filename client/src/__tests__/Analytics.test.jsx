@@ -56,7 +56,9 @@ describe('Analytics page', () => {
 
   it('shows empty pie chart state when selected currency has no expense data', async () => {
     render(<Analytics />)
-    // Mock only has BRL transactions — selecting EUR should yield no expenses
+    // Wait for BRL data to load — pie chart should render (BRL has expense data)
+    await waitFor(() => expect(screen.getByTestId('pie-chart')).toBeInTheDocument())
+    // Now switch to EUR — no EUR transactions in mock, so empty state should appear
     fireEvent.click(screen.getByRole('button', { name: 'EUR' }))
     await waitFor(() => {
       expect(screen.getByText('No expense data for this month.')).toBeInTheDocument()
