@@ -6,6 +6,7 @@ import { GoalProgressBar } from '../components/GoalProgressBar'
 import { SummaryCard } from '../components/SummaryCard'
 
 function toEUR(amount, currency, rate) {
+  if (!rate) return 0
   return currency === 'EUR' ? amount : amount / rate
 }
 
@@ -45,12 +46,10 @@ export function Dashboard() {
   const incomeByCurrency = groupByCurrency(monthTx, 'income')
   const expensesByCurrency = groupByCurrency(monthTx, 'expense')
 
-  const netEUR = rate
-    ? monthTx.reduce((sum, t) => {
-        const eur = toEUR(t.amount, t.currency, rate)
-        return t.type === 'income' ? sum + eur : sum - eur
-      }, 0)
-    : 0
+  const netEUR = monthTx.reduce((sum, t) => {
+    const eur = toEUR(t.amount, t.currency, rate)
+    return t.type === 'income' ? sum + eur : sum - eur
+  }, 0)
 
   return (
     <div className="space-y-8">
