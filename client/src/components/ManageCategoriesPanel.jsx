@@ -16,7 +16,7 @@ export function ManageCategoriesPanel({ categories, onDelete }) {
             <button
               type="button"
               onClick={() => handleDelete(c)}
-              className="ml-1 text-red-400 hover:text-red-600"
+              className="ml-1 text-red-400 hover:text-red-500 dark:hover:text-red-400 focus:outline-none focus:ring-1 focus:ring-red-500 rounded"
               aria-label={`Delete ${c}`}
             >
               <Trash2 size={12} />
