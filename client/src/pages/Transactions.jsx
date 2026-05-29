@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Pencil, Trash2, Plus } from 'lucide-react'
+import { Pencil, Trash2, Plus, Settings } from 'lucide-react'
 import { getTransactions, createTransaction, updateTransaction, deleteTransaction } from '../api/transactions'
-import { getCategories } from '../api/categories'
+import { getCategories, deleteCategory } from '../api/categories'
 import { TransactionForm } from '../components/TransactionForm'
+import { ManageCategoriesPanel } from '../components/ManageCategoriesPanel'
 import { useExchangeRate } from '../context/ExchangeRateContext'
 
 function currentMonthValue() {
@@ -15,15 +16,17 @@ export function Transactions() {
   const [categories, setCategories] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [showManage, setShowManage] = useState(false)
   const [filterMonth, setFilterMonth] = useState(currentMonthValue())
   const [filterCategory, setFilterCategory] = useState('')
   const [filterType, setFilterType] = useState('')
 
   const load = () => getTransactions().then(setTransactions)
+  const loadCategories = () => getCategories().then(setCategories)
 
   useEffect(() => {
     load()
-    getCategories().then(setCategories)
+    loadCategories()
   }, [])
 
   const filtered = useMemo(() => {
@@ -56,17 +59,42 @@ export function Transactions() {
     load()
   }
 
+  const handleDeleteCategory = async (name) => {
+    try {
+      await deleteCategory(name)
+      loadCategories()
+    } catch {
+      alert('Failed to delete category. Please try again.')
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Transactions</h1>
-        <button
-          onClick={() => { setEditing(null); setShowForm(true) }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          <Plus size={16} /> Add Transaction
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowManage(s => !s)}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <Settings size={16} /> Manage Categories
+          </button>
+          <button
+            onClick={() => { setEditing(null); setShowForm(true) }}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            <Plus size={16} /> Add Transaction
+          </button>
+        </div>
       </div>
+
+      {showManage && (
+        <ManageCategoriesPanel
+          categories={categories}
+          onDelete={handleDeleteCategory}
+          onCategoryAdded={loadCategories}
+        />
+      )}
 
       <div className="flex flex-wrap gap-3">
         <div>

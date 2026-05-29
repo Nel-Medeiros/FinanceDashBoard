@@ -16,7 +16,9 @@ vi.mock('../api/transactions', () => ({
 }))
 
 vi.mock('../api/categories', () => ({
-  getCategories: vi.fn().mockResolvedValue(['Salary', 'Food', 'Transport'])
+  getCategories: vi.fn().mockResolvedValue(['Salary', 'Food', 'Transport']),
+  addCategory: vi.fn().mockResolvedValue(['Salary', 'Food', 'Transport', 'Groceries']),
+  deleteCategory: vi.fn().mockResolvedValue(['Salary', 'Transport'])
 }))
 
 vi.mock('../context/ExchangeRateContext', () => ({
@@ -24,6 +26,9 @@ vi.mock('../context/ExchangeRateContext', () => ({
 }))
 
 describe('Transactions page', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
   it('renders list of transactions', async () => {
     render(<Transactions />)
     await waitFor(() => {
@@ -53,5 +58,34 @@ describe('Transactions page', () => {
     await waitFor(() => {
       expect(screen.getByText('≈ €34.19')).toBeInTheDocument()
     })
+  })
+
+  it('shows Manage button in the header', () => {
+    render(<Transactions />)
+    expect(screen.getByRole('button', { name: /manage/i })).toBeInTheDocument()
+  })
+
+  it('toggles ManageCategoriesPanel when Manage Categories button is clicked', async () => {
+    render(<Transactions />)
+    await waitFor(() => screen.getByText('Monthly salary'))
+    expect(screen.queryByPlaceholderText('New category name')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /manage categories/i }))
+    expect(screen.getByPlaceholderText('New category name')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /manage categories/i }))
+    expect(screen.queryByPlaceholderText('New category name')).not.toBeInTheDocument()
+  })
+
+  it('re-fetches categories after a category is deleted', async () => {
+    const { getCategories, deleteCategory } = await import('../api/categories')
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    render(<Transactions />)
+    await waitFor(() => screen.getByText('Monthly salary'))
+    fireEvent.click(screen.getByRole('button', { name: /manage/i }))
+    fireEvent.click(screen.getByLabelText('Delete Food'))
+    await waitFor(() => {
+      expect(deleteCategory).toHaveBeenCalledWith('Food')
+      expect(getCategories).toHaveBeenCalledTimes(2)
+    })
+    confirmSpy.mockRestore()
   })
 })

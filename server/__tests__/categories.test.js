@@ -47,3 +47,24 @@ describe('POST /api/categories', () => {
     expect(saved).toHaveLength(0)
   })
 })
+
+describe('DELETE /api/categories/:name', () => {
+  it('removes an existing category and returns the updated list', async () => {
+    readJSON.mockResolvedValue([...mockCategories])
+    const res = await request(app).delete('/api/categories/Food')
+    expect(res.status).toBe(200)
+    expect(res.body).not.toContain('Food')
+    expect(res.body).toContain('Rent')
+    expect(writeJSON).toHaveBeenCalledWith(
+      expect.stringContaining('categories.json'),
+      expect.not.arrayContaining(['Food'])
+    )
+  })
+
+  it('returns 404 when category does not exist', async () => {
+    readJSON.mockResolvedValue([...mockCategories])
+    const res = await request(app).delete('/api/categories/Unknown')
+    expect(res.status).toBe(404)
+    expect(writeJSON).not.toHaveBeenCalled()
+  })
+})

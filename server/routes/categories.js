@@ -19,4 +19,13 @@ router.post('/', async (req, res) => {
   res.status(201).json(categories)
 })
 
+router.delete('/:name', async (req, res) => {
+  const categories = await readJSON(DATA_PATH) || []
+  const { name } = req.params
+  if (!categories.includes(name)) return res.status(404).json({ error: 'Category not found' })
+  const updated = categories.filter(c => c !== name)
+  await writeJSON(DATA_PATH, updated)
+  res.json(updated)
+})
+
 module.exports = router
