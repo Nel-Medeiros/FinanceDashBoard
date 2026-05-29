@@ -134,41 +134,52 @@ export function Transactions() {
         </div>
       </div>
 
-      {showForm && (
+      {showForm && !editing && (
         <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold mb-4">{editing ? 'Edit Transaction' : 'New Transaction'}</h2>
+          <h2 className="text-lg font-semibold mb-4">New Transaction</h2>
           <TransactionForm
-            initial={editing || undefined}
             categories={categories}
             onSubmit={handleSubmit}
-            onCancel={() => { setShowForm(false); setEditing(null) }}
+            onCancel={() => setShowForm(false)}
           />
         </div>
       )}
 
       <div className="space-y-2">
         {filtered.map(tx => (
-          <div key={tx.id} className="bg-white dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${tx.type === 'income' ? 'bg-green-500' : 'bg-red-500'}`} />
-              <div>
-                <p className="font-medium">{tx.description || tx.category}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{tx.date} · {tx.category}</p>
+          editing?.id === tx.id ? (
+            <div key={tx.id} className="bg-white dark:bg-gray-800 rounded-lg p-5 border border-indigo-300 dark:border-indigo-700">
+              <h2 className="text-lg font-semibold mb-4">Edit Transaction</h2>
+              <TransactionForm
+                initial={editing}
+                categories={categories}
+                onSubmit={handleSubmit}
+                onCancel={() => { setShowForm(false); setEditing(null) }}
+              />
+            </div>
+          ) : (
+            <div key={tx.id} className="bg-white dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${tx.type === 'income' ? 'bg-green-500' : 'bg-red-500'}`} />
+                <div>
+                  <p className="font-medium">{tx.description || tx.category}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{tx.date} · {tx.category}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <p className={`font-semibold ${tx.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {tx.type === 'income' ? '+' : '-'}{tx.currency === 'BRL' ? 'R$' : '€'}{tx.amount.toFixed(2)}
+                  </p>
+                  {tx.currency !== 'EUR' && rate && (
+                    <p className="text-xs text-gray-400 dark:text-gray-500">≈ €{(tx.amount / rate).toFixed(2)}</p>
+                  )}
+                </div>
+                <button onClick={() => handleEdit(tx)} className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500"><Pencil size={14} /></button>
+                <button onClick={() => handleDelete(tx.id)} className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500"><Trash2 size={14} /></button>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className={`font-semibold ${tx.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {tx.type === 'income' ? '+' : '-'}{tx.currency === 'BRL' ? 'R$' : '€'}{tx.amount.toFixed(2)}
-                </p>
-                {tx.currency !== 'EUR' && rate && (
-                  <p className="text-xs text-gray-400 dark:text-gray-500">≈ €{(tx.amount / rate).toFixed(2)}</p>
-                )}
-              </div>
-              <button onClick={() => handleEdit(tx)} className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500"><Pencil size={14} /></button>
-              <button onClick={() => handleDelete(tx.id)} className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500"><Trash2 size={14} /></button>
-            </div>
-          </div>
+          )
         ))}
         {filtered.length === 0 && (
           <p className="text-center text-gray-500 dark:text-gray-400 py-10">No transactions found for this filter.</p>
