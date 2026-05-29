@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useExchangeRate } from '../context/ExchangeRateContext'
 import { getAccounts } from '../api/accounts'
 import { getTransactions } from '../api/transactions'
@@ -30,6 +30,7 @@ export function Dashboard() {
   const rate = useExchangeRate()
   const [accounts, setAccounts] = useState([])
   const [transactions, setTransactions] = useState([])
+  const [filterMonth, setFilterMonth] = useState(currentMonthPrefix())
 
   useEffect(() => {
     getAccounts().then(setAccounts)
@@ -40,16 +41,21 @@ export function Dashboard() {
     ? accounts.reduce((sum, a) => sum + toEUR(a.balance, a.currency, rate), 0)
     : 0
 
-  const thisMonth = currentMonthPrefix()
-  const monthTx = transactions.filter(t => t.date.startsWith(thisMonth))
+  const filteredTx = useMemo(() =>
+    filterMonth ? transactions.filter(t => t.date.startsWith(filterMonth)) : transactions
+  , [transactions, filterMonth])
 
-  const incomeByCurrency = groupByCurrency(monthTx, 'income')
-  const expensesByCurrency = groupByCurrency(monthTx, 'expense')
+  const incomeByCurrency = useMemo(() => groupByCurrency(filteredTx, 'income'), [filteredTx])
+  const expensesByCurrency = useMemo(() => groupByCurrency(filteredTx, 'expense'), [filteredTx])
 
-  const netEUR = monthTx.reduce((sum, t) => {
-    const eur = toEUR(t.amount, t.currency, rate)
-    return t.type === 'income' ? sum + eur : sum - eur
-  }, 0)
+  const netEUR = useMemo(() =>
+    filteredTx.reduce((sum, t) => {
+      const eur = toEUR(t.amount, t.currency, rate)
+      return t.type === 'income' ? sum + eur : sum - eur
+    }, 0)
+  , [filteredTx, rate])
+
+  const periodLabel = filterMonth ? `Net — ${filterMonth}` : 'Net — All Time'
 
   return (
     <div className="space-y-8">
@@ -65,28 +71,50 @@ export function Dashboard() {
         <GoalProgressBar totalEUR={totalEUR} />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {CURRENCY_ORDER.filter(c => incomeByCurrency[c] !== undefined).map(c => (
-          <SummaryCard
-            key={`income-${c}`}
-            label={`Income (${c})`}
-            value={`${currencySymbol(c)}${incomeByCurrency[c].toFixed(2)}`}
-            color="text-green-600 dark:text-green-400"
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setFilterMonth('')}
+            aria-pressed={filterMonth === ''}
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+              filterMonth === ''
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            All
+          </button>
+          <input
+            type="month"
+            value={filterMonth}
+            onChange={e => setFilterMonth(e.target.value)}
+            className="border rounded px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white"
           />
-        ))}
-        {CURRENCY_ORDER.filter(c => expensesByCurrency[c] !== undefined).map(c => (
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {CURRENCY_ORDER.filter(c => incomeByCurrency[c] !== undefined).map(c => (
+            <SummaryCard
+              key={`income-${c}`}
+              label={`Income (${c})`}
+              value={`${currencySymbol(c)}${incomeByCurrency[c].toFixed(2)}`}
+              color="text-green-600 dark:text-green-400"
+            />
+          ))}
+          {CURRENCY_ORDER.filter(c => expensesByCurrency[c] !== undefined).map(c => (
+            <SummaryCard
+              key={`expense-${c}`}
+              label={`Expenses (${c})`}
+              value={`${currencySymbol(c)}${expensesByCurrency[c].toFixed(2)}`}
+              color="text-red-600 dark:text-red-400"
+            />
+          ))}
           <SummaryCard
-            key={`expense-${c}`}
-            label={`Expenses (${c})`}
-            value={`${currencySymbol(c)}${expensesByCurrency[c].toFixed(2)}`}
-            color="text-red-600 dark:text-red-400"
+            label={periodLabel}
+            value={`€${netEUR.toFixed(2)}`}
+            color={netEUR >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}
           />
-        ))}
-        <SummaryCard
-          label="Net This Month"
-          value={`€${netEUR.toFixed(2)}`}
-          color={netEUR >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}
-        />
+        </div>
       </div>
     </div>
   )
