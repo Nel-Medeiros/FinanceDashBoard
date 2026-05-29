@@ -77,7 +77,7 @@ export function Transactions() {
             onClick={() => setShowManage(s => !s)}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <Settings size={16} /> Manage
+            <Settings size={16} /> Manage Categories
           </button>
           <button
             onClick={() => { setEditing(null); setShowForm(true) }}
@@ -92,6 +92,7 @@ export function Transactions() {
         <ManageCategoriesPanel
           categories={categories}
           onDelete={handleDeleteCategory}
+          onCategoryAdded={loadCategories}
         />
       )}
 
@@ -141,7 +142,6 @@ export function Transactions() {
             categories={categories}
             onSubmit={handleSubmit}
             onCancel={() => { setShowForm(false); setEditing(null) }}
-            onCategoryAdded={loadCategories}
           />
         </div>
       )}

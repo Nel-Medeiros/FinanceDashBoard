@@ -65,14 +65,14 @@ describe('Transactions page', () => {
     expect(screen.getByRole('button', { name: /manage/i })).toBeInTheDocument()
   })
 
-  it('toggles ManageCategoriesPanel when Manage button is clicked', async () => {
+  it('toggles ManageCategoriesPanel when Manage Categories button is clicked', async () => {
     render(<Transactions />)
     await waitFor(() => screen.getByText('Monthly salary'))
-    expect(screen.queryByText('Manage Categories')).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /manage/i }))
-    expect(screen.getByText('Manage Categories')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /manage/i }))
-    expect(screen.queryByText('Manage Categories')).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('New category name')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /manage categories/i }))
+    expect(screen.getByPlaceholderText('New category name')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /manage categories/i }))
+    expect(screen.queryByPlaceholderText('New category name')).not.toBeInTheDocument()
   })
 
   it('re-fetches categories after a category is deleted', async () => {
