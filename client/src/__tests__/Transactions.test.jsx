@@ -77,7 +77,7 @@ describe('Transactions page', () => {
 
   it('re-fetches categories after a category is deleted', async () => {
     const { getCategories, deleteCategory } = await import('../api/categories')
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
     render(<Transactions />)
     await waitFor(() => screen.getByText('Monthly salary'))
     fireEvent.click(screen.getByRole('button', { name: /manage/i }))
@@ -86,5 +86,6 @@ describe('Transactions page', () => {
       expect(deleteCategory).toHaveBeenCalledWith('Food')
       expect(getCategories).toHaveBeenCalledTimes(2)
     })
+    confirmSpy.mockRestore()
   })
 })

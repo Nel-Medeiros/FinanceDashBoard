@@ -60,8 +60,12 @@ export function Transactions() {
   }
 
   const handleDeleteCategory = async (name) => {
-    await deleteCategory(name)
-    loadCategories()
+    try {
+      await deleteCategory(name)
+      loadCategories()
+    } catch {
+      alert('Failed to delete category. Please try again.')
+    }
   }
 
   return (
@@ -71,7 +75,7 @@ export function Transactions() {
         <div className="flex gap-2">
           <button
             onClick={() => setShowManage(s => !s)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <Settings size={16} /> Manage
           </button>
