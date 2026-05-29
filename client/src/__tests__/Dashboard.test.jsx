@@ -42,7 +42,7 @@ describe('Dashboard', () => {
     await waitFor(() => {
       expect(screen.getByText('Income (BRL)')).toBeInTheDocument()
       expect(screen.getByText('Expenses (BRL)')).toBeInTheDocument()
-      expect(screen.getByText('Net This Month')).toBeInTheDocument()
+      expect(screen.getByText(/Net —/)).toBeInTheDocument()
     })
   })
 
