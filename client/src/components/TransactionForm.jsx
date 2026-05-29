@@ -1,15 +1,28 @@
 import { useState } from 'react'
+import { Plus } from 'lucide-react'
+import { addCategory } from '../api/categories'
 
 const EMPTY = { date: new Date().toISOString().split('T')[0], type: 'expense', amount: '', currency: 'BRL', category: '', description: '' }
 
-export function TransactionForm({ initial = EMPTY, categories = [], onSubmit, onCancel }) {
+export function TransactionForm({ initial = EMPTY, categories = [], onSubmit, onCancel, onCategoryAdded }) {
   const [form, setForm] = useState(initial)
+  const [showAddCategory, setShowAddCategory] = useState(false)
+  const [newCategory, setNewCategory] = useState('')
 
   const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }))
 
   const handleSubmit = (e) => {
     e.preventDefault()
     onSubmit({ ...form, amount: parseFloat(form.amount) })
+  }
+
+  const handleSaveCategory = async () => {
+    const name = newCategory.trim()
+    if (!name) return
+    await addCategory(name)
+    setNewCategory('')
+    setShowAddCategory(false)
+    onCategoryAdded?.()
   }
 
   return (
@@ -47,15 +60,43 @@ export function TransactionForm({ initial = EMPTY, categories = [], onSubmit, on
         <option value="BRL">BRL</option>
         <option value="EUR">EUR</option>
       </select>
-      <select
-        className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-        value={form.category}
-        onChange={set('category')}
-        required
-      >
-        <option value="">Select category</option>
-        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-      </select>
+      <div className="flex gap-2">
+        <select
+          className="flex-1 border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          value={form.category}
+          onChange={set('category')}
+          required
+        >
+          <option value="">Select category</option>
+          {categories.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <button
+          type="button"
+          onClick={() => setShowAddCategory(s => !s)}
+          className="px-2 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+          aria-label="Add category"
+        >
+          <Plus size={16} />
+        </button>
+      </div>
+      {showAddCategory && (
+        <div className="flex gap-2">
+          <input
+            className="flex-1 border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            placeholder="New category name"
+            value={newCategory}
+            onChange={e => setNewCategory(e.target.value)}
+          />
+          <button
+            type="button"
+            onClick={handleSaveCategory}
+            disabled={!newCategory.trim()}
+            className="px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+          >
+            Add
+          </button>
+        </div>
+      )}
       <input
         className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
         placeholder="Description"
