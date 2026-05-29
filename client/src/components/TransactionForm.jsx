@@ -8,6 +8,7 @@ export function TransactionForm({ initial = EMPTY, categories = [], onSubmit, on
   const [form, setForm] = useState(initial)
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [newCategory, setNewCategory] = useState('')
+  const [categoryError, setCategoryError] = useState('')
 
   const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }))
 
@@ -19,10 +20,15 @@ export function TransactionForm({ initial = EMPTY, categories = [], onSubmit, on
   const handleSaveCategory = async () => {
     const name = newCategory.trim()
     if (!name) return
-    await addCategory(name)
-    setNewCategory('')
-    setShowAddCategory(false)
-    onCategoryAdded?.()
+    setCategoryError('')
+    try {
+      await addCategory(name)
+      setNewCategory('')
+      setShowAddCategory(false)
+      onCategoryAdded?.()
+    } catch {
+      setCategoryError('Failed to add category. Please try again.')
+    }
   }
 
   return (
@@ -80,21 +86,24 @@ export function TransactionForm({ initial = EMPTY, categories = [], onSubmit, on
         </button>
       </div>
       {showAddCategory && (
-        <div className="flex gap-2">
-          <input
-            className="flex-1 border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            placeholder="New category name"
-            value={newCategory}
-            onChange={e => setNewCategory(e.target.value)}
-          />
-          <button
-            type="button"
-            onClick={handleSaveCategory}
-            disabled={!newCategory.trim()}
-            className="px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
-          >
-            Add
-          </button>
+        <div className="flex flex-col gap-1">
+          <div className="flex gap-2">
+            <input
+              className="flex-1 border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              placeholder="New category name"
+              value={newCategory}
+              onChange={e => setNewCategory(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={handleSaveCategory}
+              disabled={!newCategory.trim()}
+              className="px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+            >
+              Add
+            </button>
+          </div>
+          {categoryError && <p className="text-sm text-red-500">{categoryError}</p>}
         </div>
       )}
       <input

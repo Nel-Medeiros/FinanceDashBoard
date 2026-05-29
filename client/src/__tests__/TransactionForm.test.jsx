@@ -50,4 +50,16 @@ describe('TransactionForm — add category', () => {
       expect(screen.queryByPlaceholderText('New category name')).not.toBeInTheDocument()
     })
   })
+
+  it('shows error message when addCategory fails', async () => {
+    addCategory.mockRejectedValueOnce(new Error('Network error'))
+    render(<TransactionForm categories={categories} onSubmit={noop} onCancel={noop} />)
+    fireEvent.click(screen.getByLabelText('Add category'))
+    fireEvent.change(screen.getByPlaceholderText('New category name'), { target: { value: 'Groceries' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+    await waitFor(() => {
+      expect(screen.getByText('Failed to add category. Please try again.')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('New category name')).toBeInTheDocument()
+    })
+  })
 })
