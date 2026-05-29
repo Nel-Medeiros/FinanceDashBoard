@@ -51,6 +51,26 @@ describe('TransactionForm — add category', () => {
     })
   })
 
+  it('submits with the new category after inline add', async () => {
+    const onSubmit = vi.fn()
+    // Simulate parent reload: onCategoryAdded updates categories to include Groceries
+    const { rerender } = render(
+      <TransactionForm categories={categories} onSubmit={onSubmit} onCancel={noop} onCategoryAdded={vi.fn()} />
+    )
+    fireEvent.click(screen.getByLabelText('Add category'))
+    fireEvent.change(screen.getByPlaceholderText('New category name'), { target: { value: 'Groceries' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+    // Wait for handleSaveCategory to complete, then rerender with updated categories
+    await waitFor(() => expect(addCategory).toHaveBeenCalledWith('Groceries'))
+    rerender(
+      <TransactionForm categories={[...categories, 'Groceries']} onSubmit={onSubmit} onCancel={noop} onCategoryAdded={vi.fn()} />
+    )
+    // Amount is required; fill it so the form can submit
+    fireEvent.change(screen.getByPlaceholderText('Amount'), { target: { value: '50' } })
+    fireEvent.submit(screen.getByRole('button', { name: 'Save' }).closest('form'))
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ category: 'Groceries' }))
+  })
+
   it('shows error message when addCategory fails', async () => {
     addCategory.mockRejectedValueOnce(new Error('Network error'))
     render(<TransactionForm categories={categories} onSubmit={noop} onCancel={noop} />)

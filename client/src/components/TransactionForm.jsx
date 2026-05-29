@@ -23,6 +23,7 @@ export function TransactionForm({ initial = EMPTY, categories = [], onSubmit, on
     setCategoryError('')
     try {
       await addCategory(name)
+      setForm(f => ({ ...f, category: name }))
       setNewCategory('')
       setShowAddCategory(false)
       onCategoryAdded?.()
